@@ -1,24 +1,60 @@
-import logo from './logo.svg';
+import React, {useState} from 'react';
 import './App.css';
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng
+} from 'react-places-autocomplete';
 
 function App() {
+  const [address, setAddress] = useState("");
+  const [coordinates, setCoordinates] = useState({
+    lat: null,
+    lng: null
+  });
+
+  const handleSelect = async value => {
+    const results = await geocodeByAddress(value);
+    console.log("Resultado Code", results)
+
+    const latLng = await getLatLng(results[0]);
+    console.log("Coordenada", latLng)
+
+    setAddress(value);
+    setCoordinates(latLng);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <PlacesAutocomplete 
+        value={address}
+        onChange={setAddress}
+        onSelect={handleSelect}
+      >
+        {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+          <div>
+            <p>latitude: {coordinates.lat}</p>
+            <p>longitude: {coordinates.lng}</p>
+
+            <input {...getInputProps({ placeholder: "Ingrese direccion" })}/>
+
+            <div>
+              {loading ? <div>...loading</div> : null}
+
+              {suggestions.map((suggestion) => {
+                const style = {
+                  backgroundColor: suggestion.active ? "#41b6e6" : "#fff"
+                };
+                return (
+                  <div {...getSuggestionItemProps(suggestion, { style })}>
+                    {suggestion.description}
+                  </div>
+                );
+              })}
+
+            </div>
+          </div>)}
+      </PlacesAutocomplete>
+    </>
   );
 }
 
